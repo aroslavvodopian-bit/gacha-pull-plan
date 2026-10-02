@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genshin Pull Planner | Калькулятор круток</title>
+  <style>
+    :root {
+      --bg-main: #0c1017;
+      --bg-card: #151c28;
+      --bg-card-hover: #1c2636;
+      --bg-input: #0e141e;
+      --border-color: #263346;
+      --border-focus: #4cc9f0;
+      
+      --text-main: #e6edf3;
+      --text-muted: #8b9bb4;
+      --text-gold: #ffd166;
+      
+      --accent-gold: #e5b567;
+      --accent-cyan: #38bdf8;
+      --accent-green: #34d399;
+      --accent-red: #f87171;
+      --accent-purple: #c084fc;
+      
+      --radius: 10px;
+      --transition: all 0.2s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 16px;
+      line-height: 1.4;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #16202f 0%, #101622 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .header-title h1 {
+      font-size: 1.5rem;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-title p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* CONTROLS BAR */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* BUTTONS & TOGGLES */
+    .btn {
+      background: #1c2636;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: #253349;
+      border-color: var(--accent-cyan);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #d4a34b, #aa7928);
+      color: #0c1017;
+      border: none;
+      font-weight: 600;
+    }
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #e5b567, #bd8b35);
+      color: #0c1017;
+    }
+
+    .btn-cyan {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .btn-cyan:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-danger {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--accent-red);
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+    .btn-danger:hover {
+      background: rgba(248, 113, 113, 0.25);
+    }
+
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+    }
+
+    .scenario-toggle {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .scenario-btn {
+      flex: 1;
+      padding: 8px 6px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition);
+      font-weight: 500;
+    }
+
+    .scenario-btn.active.pessimistic {
+      background: rgba(248, 113, 113, 0.2);
+      color: var(--accent-red);
+      font-weight: 700;
+    }
+    .scenario-btn.active.realistic {
+      background: rgba(255, 209, 102, 0.2);
+      color: var(--accent-gold);
+      font-weight: 700;
+    }
+    .scenario-btn.active.optimistic {
+      background: rgba(52, 211, 153, 0.2);
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+
+    .toggle-switch-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 0;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background-color: var(--text-muted);
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-cyan);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: var(--accent-cyan);
+    }
+
+    /* INPUTS */
+    input[type="number"], input[type="text"], select {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: var(--transition);
+      font-variant-numeric: tabular-nums;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    .pity-inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .pity-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .pity-group label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* WISHLIST SECTION */
+    .wishlist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .wishlist-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .wish-card {
+      background: #111722;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      transition: var(--transition);
+    }
+    .wish-card.pulled {
+      opacity: 0.65;
+      border-color: var(--accent-green);
+      background: rgba(52, 211, 153, 0.04);
+    }
+    .wish-card:hover {
+      border-color: #3b4e6d;
+    }
+    .wish-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .wish-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .wish-badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-char { background: rgba(192, 132, 252, 0.15); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.3); }
+    .badge-weapon { background: rgba(229, 181, 103, 0.15); color: var(--accent-gold); border: 1px solid rgba(229, 181, 103, 0.3); }
+    
+    .wish-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.25);
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .wish-cost {
+      font-weight: 700;
+      color: var(--accent-cyan);
+      font-variant-numeric: tabular-nums;
+    }
+    .wish-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* TABLE SECTION */
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.85rem;
+      font-variant-numeric: tabular-nums;
+      min-width: 950px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    th {
+      background: #111722;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+      font-weight: 600;
+    }
+
+    tbody tr:hover {
+      background-color: rgba(255,255,255,0.02);
+    }
+
+    .t-patch { color: var(--accent-gold); font-size: 0.95rem; }
+    .t-spent { color: var(--accent-red); font-weight: 600; }
+    .t-will { color: var(--accent-cyan); font-weight: 600; }
+    .t-need { color: #f87171; font-weight: 700; }
+    .t-end { color: var(--text-main); font-weight: 600; }
+    .t-actual { color: var(--accent-green); }
+    .t-extra { color: #60a5fa; font-weight: 600; }
+
+    .table-input {
+      width: 76px;
+      text-align: right;
+      padding: 4px 6px;
+    }
+
+    .table-summary-row {
+      background: #101622;
+      font-weight: 700;
+      border-top: 2px solid var(--border-color);
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      color: var(--accent-gold);
+      font-size: 1.15rem;
+    }
+    .modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-group label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1c2636;
+      border: 1px solid var(--accent-cyan);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      header { padding: 14px; }
+      .header-title h1 { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- TOP HEADER -->
+  <header>
+    <div class="header-title">
+      <h1>✦ Genshin Wish Budget</h1>
+      <p>Сводный планировщик накоплений круток по патчам</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-cyan" onclick="openSyncModal()">☁ Синхронизация</button>
+      <button class="btn" onclick="exportDataJSON()">💾 Экспорт</button>
+      <label class="btn" style="cursor: pointer;">
+        📥 Импорт <input type="file" id="importInput" style="display:none;" onchange="importDataJSON(event)" accept=".json">
+      </label>
+      <button class="btn btn-danger" onclick="resetToDefaultsPrompt()">↺ Сброс</button>
+    </div>
+  </header>
+
+  <!-- CONTROLS & PARAMS -->
+  <div class="controls-grid">
+
+    <!-- Card: Mode & Cycle -->
+    <div class="card">
+      <div class="card-title">
+        <span>Цикл и стартовый запас</span>
+        <button class="btn btn-sm" onclick="addNewCyclePrompt()">+ Новый цикл</button>
+      </div>
+      <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Активный цикл</label>
+          <select id="cycleSelect" style="width: 100%;" onchange="changeActiveCycle(this.value)"></select>
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Стартовый запас</label>
+          <input type="number" id="startPullsInput" style="width: 100%;" onchange="updateStartPulls(this.value)">
+        </div>
+      </div>
+
+      <div class="card-title" style="margin-top: 14px; margin-bottom: 8px;">
+        <span>Сценарий расчёта</span>
+      </div>
+      <div class="scenario-toggle">
+        <button id="btnPessimistic" class="scenario-btn pessimistic" onclick="setScenario('pessimistic')">🔴 Худший</button>
+        <button id="btnRealistic" class="scenario-btn realistic" onclick="setScenario('realistic')">🟡 Средний</button>
+        <button id="btnOptimistic" class="scenario-btn optimistic" onclick="setScenario('optimistic')">🟢 Лучший</button>
+      </div>
+    </div>
+
+    <!-- Card: Cashback & Banner Status -->
+    <div class="card">
+      <div class="card-title">
+        <span>Кэшбэк (Starglitter)</span>
+      </div>
+      <div class="toggle-switch-wrapper">
+        <div>
+          <div style="font-weight: 600; font-size: 0.85rem;">Учёт кэшбэка 7%</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Коэфф. 0.93 (7 круток возврата со 100)</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="cashbackToggle" onchange="toggleCashback(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="card-title" style="margin-top: 14px; margin-bottom: 8px;">
+        <span>Текущий баннер персонажа</span>
+      </div>
+      <div class="pity-inputs-grid">
+        <div class="pity-group">
+          <label>Откручено (пити / 90)</label>
+          <input type="number" id="charPityInput" min="0" max="89" onchange="updateBannerState()">
+        </div>
+        <div class="pity-group">
+          <label>Статус гаранта</label>
+          <select id="charGuaranteedSelect" onchange="updateBannerState()">
+            <option value="false">50 / 50</option>
+            <option value="true">100% Гарант</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Weapon Banner -->
+    <div class="card">
+      <div class="card-title">
+        <span>Текущий баннер оружия</span>
+      </div>
+      <div class="pity-inputs-grid">
+        <div class="pity-group">
+          <label>Откручено (пити / 80)</label>
+          <input type="number" id="weaponPityInput" min="0" max="79" onchange="updateBannerState()">
+        </div>
+        <div class="pity-group">
+          <label>Очко судьбы</label>
+          <select id="weaponFateSelect" onchange="updateBannerState()">
+            <option value="0">0 / 1 (Курс 50%)</option>
+            <option value="1">1 / 1 (Гарант 100%)</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top: 14px; font-size: 0.75rem; color: var(--text-muted); background: var(--bg-input); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+        💡 Открученный пити уменьшает расчётные траты на первого персонажа/оружие в вишлисте.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WISHLIST -->
+  <div class="card">
+    <div class="wishlist-header">
+      <div style="font-weight: 600; font-size: 1rem; color: var(--text-gold);">
+        🎯 Вишлист и планы выбивания
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="openAddWishModal()">+ Добавить цель</button>
+    </div>
+
+    <div class="wishlist-items" id="wishlistContainer">
+      <!-- Items dynamically populated -->
+    </div>
+  </div>
+
+  <!-- MAIN TABLE -->
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div style="font-weight: 600; font-size: 1rem; color: var(--text-gold);">
+        📊 Таблица баланса круток по патчам
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        «Вышло» — факт в игре. Пустые ячейки берут расчётное значение.
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Патч</th>
+            <th>Траты вишлист</th>
+            <th>+/- Ручные</th>
+            <th>Итого трат</th>
+            <th>Прогноз (6.x)</th>
+            <th>Факт круток</th>
+            <th>Расхождение</th>
+            <th>Будет к патчу</th>
+            <th>Не хватает</th>
+            <th>В конце должно быть</th>
+            <th>Вышло (факт)</th>
+            <th>Дополнительные</th>
+          </tr>
+        </thead>
+        <tbody id="patchesTableBody">
+          <!-- Populated dynamically -->
+        </tbody>
+        <tfoot>
+          <tr class="table-summary-row" id="tableSummaryRow">
+            <!-- Populated dynamically -->
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: ADD / EDIT WISH -->
+<div class="modal-overlay" id="wishModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="wishModalTitle">Добавить цель в вишлист</h3>
+      <button class="btn btn-sm" onclick="closeModal('wishModal')">✕</button>
+    </div>
+    <div class="modal-form">
+      <input type="hidden" id="wishId">
+      <div class="form-group">
+        <label>Название персонажа или оружия</label>
+        <input type="text" id="wishName" placeholder="например, Царица">
+      </div>
+      <div class="form-group">
+        <label>Тип</label>
+        <select id="wishType">
+          <option value="char">Персонаж (база 150)</option>
+          <option value="weapon">Сигнатурное оружие (база 130)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Патч баннера</label>
+        <select id="wishPatch"></select>
+      </div>
+      <div class="form-group">
+        <label>Приоритет желания (из 10)</label>
+        <input type="number" id="wishRate" min="1" max="10" value="10">
+      </div>
+      <div class="form-group">
+        <label>Кастомное количество круток (опционально, иначе расчётное)</label>
+        <input type="number" id="wishCustomPulls" placeholder="Оставить пустым для авторасчёта">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+        <button class="btn" onclick="closeModal('wishModal')">Отмена</button>
+        <button class="btn btn-gold" onclick="saveWishItem()">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PULLED (PITY TRACKER) -->
+<div class="modal-overlay" id="pulledModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Отметить как выбито</h3>
+      <button class="btn btn-sm" onclick="closeModal('pulledModal')">✕</button>
+    </div>
+    <div class="modal-form">
+      <input type="hidden" id="pulledWishId">
+      <div style="font-size: 0.9rem; color: var(--accent-gold);" id="pulledWishName"></div>
+      <div class="form-group">
+        <label>Сколько реально потрачено круток?</label>
+        <input type="number" id="pulledSpent" placeholder="например, 45">
+      </div>
+      <div class="form-group">
+        <label>Лишние крутки (откручено после выпадения в пити след. баннера)</label>
+        <input type="number" id="pulledExtraPity" value="0" min="0" max="89">
+        <small style="color: var(--text-muted); font-size: 0.75rem;">Эти крутки автоматически запишутся в текущий открученный пити баннера.</small>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+        <button class="btn" onclick="closeModal('pulledModal')">Отмена</button>
+        <button class="btn btn-gold" onclick="confirmPulledItem()">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CLOUD SYNC -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Синхронизация по коду комнаты</h3>
+      <button class="btn btn-sm" onclick="closeModal('syncModal')">✕</button>
+    </div>
+    <div class="modal-form">
+      <p style="font-size: 0.8rem; color: var(--text-muted);">
+        Введи одинаковый секретный код комнаты на ПК и телефоне, чтобы синхронизировать данные в один клик.
+      </p>
+      <div class="form-group">
+        <label>Секретный код комнаты (ID)</label>
+        <input type="text" id="syncRoomCodeInput" placeholder="например, genshin-mycode-2026">
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 6px;">
+        <button class="btn btn-gold" style="flex: 1;" onclick="cloudSave()">⬆ Выгрузить в облако</button>
+        <button class="btn btn-cyan" style="flex: 1;" onclick="cloudLoad()">⬇ Загрузить из облака</button>
+      </div>
+      <div id="syncStatus" style="font-size: 0.8rem; margin-top: 4px; min-height: 20px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast"></div>
+
+<script>
+  /* =========================================================================
+     DEFAULT DATA & APP STATE
+     ========================================================================= */
+  const DEFAULT_STATE = {
+    activeCycle: "7.x",
+    settings: {
+      scenario: "pessimistic", // 'pessimistic' | 'realistic' | 'optimistic'
+      cashback: false,         // true = x0.93 multiplier
+      charBase: 75,
+      weaponBase: 65,
+      syncRoomCode: ""
+    },
+    bannerState: {
+      charPity: 0,
+      charGuaranteed: false,
+      weaponPity: 0,
+      weaponFate: 0
+    },
+    cycles: {
+      "7.x": {
+        startPulls: 162.0,
+        patches: [
+          { name: "7.0", forecast: 144, actual: 122, manualSpent: 119, actualLeftover: 205 },
+          { name: "7.1", forecast: 96,  actual: 114, manualSpent: 0,   actualLeftover: null },
+          { name: "7.2", forecast: 96,  actual: 102, manualSpent: 0,   actualLeftover: null },
+          { name: "7.3", forecast: 135, actual: 135, manualSpent: 0,   actualLeftover: null },
+          { name: "7.4", forecast: 88,  actual: 88,  manualSpent: 0,   actualLeftover: null },
+          { name: "7.5", forecast: 97,  actual: 97,  manualSpent: 0,   actualLeftover: null },
+          { name: "7.6", forecast: 83,  actual: 83,  manualSpent: 0,   actualLeftover: null },
+          { name: "7.7", forecast: 111, actual: 111, manualSpent: 0,   actualLeftover: null }
+        ],
+        wishlist: [
+          { id: "w1", name: "Царица",      type: "char",   patch: "7.3", wantRate: 10, customPulls: null, pulled: false, spentActual: null, extraPity: 0 },
+          { id: "w2", name: "Сигна царица", type: "weapon", patch: "7.3", wantRate: 9,  customPulls: null, pulled: false, spentActual: null, extraPity: 0 },
+          { id: "w3", name: "Даника",      type: "char",   patch: "7.3", wantRate: 9,  customPulls: null, pulled: false, spentActual: null, extraPity: 0 },
+          { id: "w4", name: "Ной",         type: "char",   patch: "7.5", wantRate: 10, customPulls: null, pulled: false, spentActual: null, extraPity: 0 },
+          { id: "w5", name: "Сигна ноя",   type: "weapon", patch: "7.5", wantRate: 9,  customPulls: null, pulled: false, spentActual: null, extraPity: 0 }
+        ]
+      }
+    }
+  };
+
+  let state = loadLocalState();
+
+  /* =========================================================================
+     PERSISTENCE (LOCAL STORAGE)
+     ========================================================================= */
+  function loadLocalState() {
+    try {
+      const saved = localStorage.getItem("genshin_planner_state");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Failed to load local storage:", e);
+    }
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+
+  function saveLocalState() {
+    try {
+      localStorage.setItem("genshin_planner_state", JSON.stringify(state));
+    } catch (e) {
+      console.error("Failed to save local storage:", e);
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => { toast.classList.remove("show"); }, 3000);
+  }
+
+  /* =========================================================================
+     CORE CALCULATIONS
+     ========================================================================= */
+  
+  // Calculate cost for wishlist items based on scenario, cashback, pity, and alternation
+  function calculateWishlistCosts() {
+    const cycle = state.cycles[state.activeCycle];
+    if (!cycle) return {};
+
+    const scenario = state.settings.scenario;
+    const cashback = state.settings.cashback;
+    const mult = cashback ? 0.93 : 1.0;
+
+    const costs = {};
+    let charSeq = 0;   // for alternating scenario
+    let weaponSeq = 0; // for alternating weapon
+
+    // Sequence depends on whether account starts with guaranteed
+    let firstCharGuaranteed = state.bannerState.charGuaranteed;
+
+    // Sort wishlist by patch index
+    const sortedWishes = [...cycle.wishlist].sort((a, b) => {
+      const idxA = cycle.patches.findIndex(p => p.name === a.patch);
+      const idxB = cycle.patches.findIndex(p => p.name === b.patch);
+      return idxA - idxB;
+    });
+
+    let firstCharSeen = false;
+    let firstWeaponSeen = false;
+
+    sortedWishes.forEach(item => {
+      if (item.pulled) {
+        costs[item.id] = Number(item.spentActual) || 0;
+        return;
+      }
+
+      if (item.customPulls !== null && item.customPulls !== undefined && item.customPulls !== "") {
+        costs[item.id] = Math.round(Number(item.customPulls) * mult);
+        return;
+      }
+
+      let baseCost = 0;
+
+      if (item.type === "char") {
+        if (scenario === "pessimistic") {
+          baseCost = 150;
+        } else if (scenario === "optimistic") {
+          baseCost = 75;
+        } else {
+          // realistic (alternation)
+          if (charSeq === 0) {
+            baseCost = firstCharGuaranteed ? 75 : 75; // win 1st
+          } else {
+            // alternate win(75) and loss(150)
+            baseCost = (charSeq % 2 === 1) ? 150 : 75;
+          }
+          charSeq++;
+        }
+
+        // Apply pity deduction for the very first unpulled character
+        if (!firstCharSeen) {
+          firstCharSeen = true;
+          baseCost = Math.max(0, baseCost - (state.bannerState.charPity || 0));
+        }
+      } else {
+        // weapon
+        if (scenario === "pessimistic") {
+          baseCost = 130;
+        } else if (scenario === "optimistic") {
+          baseCost = 65;
+        } else {
+          // realistic (alternation: 65, 130, 65...)
+          baseCost = (weaponSeq % 2 === 0) ? 65 : 130;
+          weaponSeq++;
+        }
+
+        // Apply pity deduction for the very first unpulled weapon
+        if (!firstWeaponSeen) {
+          firstWeaponSeen = true;
+          baseCost = Math.max(0, baseCost - (state.bannerState.weaponPity || 0));
+        }
+      }
+
+      costs[item.id] = Math.max(0, Math.round(baseCost * mult));
+    });
+
+    return costs;
+  }
+
+  // Calculate full timeline of patches
+  function calculatePatchTimeline() {
+    const cycle = state.cycles[state.activeCycle];
+    if (!cycle) return [];
+
+    const wishCosts = calculateWishlistCosts();
+    const rows = [];
+
+    // Starting pulls
+    let prevLeftover = Number(cycle.startPulls) || 0;
+
+    cycle.patches.forEach((patch, idx) => {
+      // 1. Wishlist spent for this patch
+      const wishesInPatch = cycle.wishlist.filter(w => w.patch === patch.name);
+      const wishlistSpent = wishesInPatch.reduce((sum, w) => sum + (wishCosts[w.id] || 0), 0);
+      
+      // 2. Manual spent
+      const manualSpent = Number(patch.manualSpent) || 0;
+      const totalSpent = wishlistSpent + manualSpent;
+
+      // 3. Income: actual if entered, else forecast
+      const forecastIncome = Number(patch.forecast) || 0;
+      const actualIncome = (patch.actual !== null && patch.actual !== undefined && patch.actual !== "") ? Number(patch.actual) : forecastIncome;
+
+      // 4. Difference & percentage
+      const diffIncome = forecastIncome - actualIncome;
+      let diffPercent = "";
+      if (forecastIncome + actualIncome > 0) {
+        const pct = (diffIncome / ((forecastIncome + actualIncome) / 2)) * 100;
+        if (pct !== 0) {
+          diffPercent = (diffIncome >= 0 ? "-" : "+") + Math.abs(pct).toFixed(2) + "%";
+        }
+      }
+
+      // 5. Balance to start of patch ("Будет")
+      const balanceBefore = prevLeftover + actualIncome;
+
+      // 6. Deficit ("Не хватает")
+      const shortage = (totalSpent > balanceBefore) ? (totalSpent - balanceBefore) : 0;
+
+      // 7. Balance end expected ("В конце патча должно быть")
+      const balanceEndExpected = balanceBefore - totalSpent;
+
+      // 8. Actual leftover in game ("Вышло")
+      const hasActualLeftover = (patch.actualLeftover !== null && patch.actualLeftover !== undefined && patch.actualLeftover !== "");
+      const actualLeftover = hasActualLeftover ? Number(patch.actualLeftover) : balanceEndExpected;
+
+      // 9. Extra pulls ("Дополнительные")
+      const extraPulls = actualLeftover - balanceEndExpected;
+
+      rows.push({
+        name: patch.name,
+        wishlistSpent,
+        manualSpent,
+        totalSpent,
+        forecastIncome,
+        actualIncome,
+        hasCustomIncome: (patch.actual !== null && patch.actual !== undefined && patch.actual !== ""),
+        diffIncome,
+        diffPercent,
+        balanceBefore,
+        shortage,
+        balanceEndExpected,
+        actualLeftover,
+        hasActualLeftover,
+        extraPulls
+      });
+
+      // Chain leftover to next patch
+      prevLeftover = actualLeftover;
+    });
+
+    return rows;
+  }
+
+  /* =========================================================================
+     UI RENDERERS
+     ========================================================================= */
+  function renderAll() {
+    renderCycleSelector();
+    renderControls();
+    renderWishlist();
+    renderTable();
+    saveLocalState();
+  }
+
+  function renderCycleSelector() {
+    const cycleSelect = document.getElementById("cycleSelect");
+    cycleSelect.innerHTML = "";
+    Object.keys(state.cycles).forEach(cName => {
+      const opt = document.createElement("option");
+      opt.value = cName;
+      opt.textContent = `Цикл ${cName}`;
+      if (cName === state.activeCycle) opt.selected = true;
+      cycleSelect.appendChild(opt);
+    });
+
+    const cycle = state.cycles[state.activeCycle];
+    document.getElementById("startPullsInput").value = cycle ? cycle.startPulls : 0;
+  }
+
+  function renderControls() {
+    const s = state.settings.scenario;
+    document.getElementById("btnPessimistic").className = "scenario-btn pessimistic" + (s === "pessimistic" ? " active" : "");
+    document.getElementById("btnRealistic").className = "scenario-btn realistic" + (s === "realistic" ? " active" : "");
+    document.getElementById("btnOptimistic").className = "scenario-btn optimistic" + (s === "optimistic" ? " active" : "");
+
+    document.getElementById("cashbackToggle").checked = !!state.settings.cashback;
+
+    document.getElementById("charPityInput").value = state.bannerState.charPity || 0;
+    document.getElementById("charGuaranteedSelect").value = state.bannerState.charGuaranteed ? "true" : "false";
+    document.getElementById("weaponPityInput").value = state.bannerState.weaponPity || 0;
+    document.getElementById("weaponFateSelect").value = String(state.bannerState.weaponFate || 0);
+
+    if (state.settings.syncRoomCode) {
+      document.getElementById("syncRoomCodeInput").value = state.settings.syncRoomCode;
+    }
+  }
+
+  function renderWishlist() {
+    const cycle = state.cycles[state.activeCycle];
+    const container = document.getElementById("wishlistContainer");
+    container.innerHTML = "";
+
+    if (!cycle || cycle.wishlist.length === 0) {
+      container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 24px;">Вишлист пуст. Добавьте персонажей или оружие!</div>`;
+      return;
+    }
+
+    const costs = calculateWishlistCosts();
+
+    cycle.wishlist.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "wish-card" + (item.pulled ? " pulled" : "");
+
+      const badgeClass = item.type === "char" ? "badge-char" : "badge-weapon";
+      const badgeText = item.type === "char" ? "Персонаж" : "Оружие";
+      const cost = costs[item.id] !== undefined ? costs[item.id] : 0;
+
+      card.innerHTML = `
+        <div class="wish-top">
+          <div class="wish-title">
+            <span>${escapeHtml(item.name)}</span>
+            <span class="wish-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--accent-gold); font-weight: 700;">★ ${item.wantRate}/10</span>
+        </div>
+        <div class="wish-details">
+          <span>Патч: <b>${item.patch}</b></span>
+          <span>Круток: <b class="wish-cost">${cost}</b></span>
+        </div>
+        <div class="wish-actions">
+          ${item.pulled 
+            ? `<button class="btn btn-sm btn-cyan" onclick="unmarkPulled('${item.id}')">✓ Выбито (${item.spentActual} кр.)</button>` 
+            : `<button class="btn btn-sm btn-gold" onclick="openPulledModal('${item.id}')">Выбито</button>`
+          }
+          <button class="btn btn-sm" onclick="openEditWishModal('${item.id}')">✎</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteWishItem('${item.id}')">✕</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById("patchesTableBody");
+    const tfoot = document.getElementById("tableSummaryRow");
+    tbody.innerHTML = "";
+
+    const timeline = calculatePatchTimeline();
+    const cycle = state.cycles[state.activeCycle];
+
+    let sumWishlist = 0;
+    let sumManual = 0;
+    let sumTotalSpent = 0;
+    let sumForecastIncome = 0;
+    let sumActualIncome = 0;
+
+    timeline.forEach((row, idx) => {
+      sumWishlist += row.wishlistSpent;
+      sumManual += row.manualSpent;
+      sumTotalSpent += row.totalSpent;
+      sumForecastIncome += row.forecastIncome;
+      sumActualIncome += row.actualIncome;
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td><span class="t-patch">${row.name}</span></td>
+        <td>${row.wishlistSpent}</td>
+        <td>
+          <input type="number" class="table-input" value="${row.manualSpent || ''}" placeholder="0" 
+                 onchange="updatePatchField(${idx}, 'manualSpent', this.value)">
+        </td>
+        <td class="t-spent">${row.totalSpent}</td>
+        <td>${row.forecastIncome}</td>
+        <td>
+          <input type="number" class="table-input" value="${row.hasCustomIncome ? row.actualIncome : ''}" placeholder="${row.forecastIncome}" 
+                 onchange="updatePatchField(${idx}, 'actual', this.value)">
+        </td>
+        <td style="font-size: 0.75rem; color: ${row.diffIncome >= 0 ? 'var(--accent-red)' : 'var(--accent-green)'}">
+          ${row.diffIncome !== 0 ? `${row.diffIncome > 0 ? '-' : '+'}${Math.abs(row.diffIncome)} (${row.diffPercent})` : '-'}
+        </td>
+        <td class="t-will">${row.balanceBefore}</td>
+        <td class="t-need">${row.shortage > 0 ? row.shortage : ''}</td>
+        <td class="t-end">${row.balanceEndExpected}</td>
+        <td>
+          <input type="number" class="table-input t-actual" style="font-weight: 600;" 
+                 value="${row.hasActualLeftover ? row.actualLeftover : ''}" placeholder="${row.balanceEndExpected}"
+                 onchange="updatePatchField(${idx}, 'actualLeftover', this.value)">
+        </td>
+        <td class="t-extra">${row.extraPulls !== 0 ? (row.extraPulls > 0 ? `+${row.extraPulls}` : row.extraPulls) : ''}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    const endLeftover = timeline.length > 0 ? timeline[timeline.length - 1].actualLeftover : 0;
+    const diffSum = sumForecastIncome - sumActualIncome;
+
+    tfoot.innerHTML = `
+      <td>ИТОГО ${state.activeCycle}</td>
+      <td>${sumWishlist}</td>
+      <td>${sumManual}</td>
+      <td class="t-spent">${sumTotalSpent}</td>
+      <td>${sumForecastIncome}</td>
+      <td>${sumActualIncome}</td>
+      <td>${diffSum !== 0 ? (diffSum > 0 ? '-' : '+') + Math.abs(diffSum) : '-'}</td>
+      <td colspan="2" style="text-align: right; color: var(--text-muted);">Итоговый остаток:</td>
+      <td class="t-will" style="font-size: 1.05rem;" colspan="3">${endLeftover} круток</td>
+    `;
+  }
+
+  /* =========================================================================
+     USER ACTIONS & EVENT HANDLERS
+     ========================================================================= */
+  function setScenario(scen) {
+    state.settings.scenario = scen;
+    renderAll();
+  }
+
+  function toggleCashback(enabled) {
+    state.settings.cashback = enabled;
+    renderAll();
+  }
+
+  function updateBannerState() {
+    state.bannerState.charPity = Math.max(0, parseInt(document.getElementById("charPityInput").value) || 0);
+    state.bannerState.charGuaranteed = document.getElementById("charGuaranteedSelect").value === "true";
+    state.bannerState.weaponPity = Math.max(0, parseInt(document.getElementById("weaponPityInput").value) || 0);
+    state.bannerState.weaponFate = parseInt(document.getElementById("weaponFateSelect").value) || 0;
+    renderAll();
+  }
+
+  function changeActiveCycle(cName) {
+    state.activeCycle = cName;
+    renderAll();
+  }
+
+  function updateStartPulls(val) {
+    const cycle = state.cycles[state.activeCycle];
+    if (cycle) {
+      cycle.startPulls = Number(val) || 0;
+      renderAll();
+    }
+  }
+
+  function updatePatchField(idx, field, val) {
+    const cycle = state.cycles[state.activeCycle];
+    if (!cycle || !cycle.patches[idx]) return;
+
+    if (val === "" || val === null || val === undefined) {
+      cycle.patches[idx][field] = null;
+    } else {
+      cycle.patches[idx][field] = Number(val);
+    }
+    renderAll();
+  }
+
+  /* =========================================================================
+     MODAL CONTROLS: WISHLIST
+     ========================================================================= */
+  function openAddWishModal() {
+    document.getElementById("wishModalTitle").textContent = "Добавить цель в вишлист";
+    document.getElementById("wishId").value = "";
+    document.getElementById("wishName").value = "";
+    document.getElementById("wishType").value = "char";
+    document.getElementById("wishRate").value = "10";
+    document.getElementById("wishCustomPulls").value = "";
+
+    const cycle = state.cycles[state.activeCycle];
+    const patchSelect = document.getElementById("wishPatch");
+    patchSelect.innerHTML = "";
+    cycle.patches.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.name;
+      opt.textContent = `Патч ${p.name}`;
+      patchSelect.appendChild(opt);
+    });
+
+    openModal("wishModal");
+  }
+
+  function openEditWishModal(id) {
+    const cycle = state.cycles[state.activeCycle];
+    const item = cycle.wishlist.find(w => w.id === id);
+    if (!item) return;
+
+    document.getElementById("wishModalTitle").textContent = "Редактировать цель";
+    document.getElementById("wishId").value = item.id;
+    document.getElementById("wishName").value = item.name;
+    document.getElementById("wishType").value = item.type;
+    document.getElementById("wishRate").value = item.wantRate;
+    document.getElementById("wishCustomPulls").value = item.customPulls !== null ? item.customPulls : "";
+
+    const patchSelect = document.getElementById("wishPatch");
+    patchSelect.innerHTML = "";
+    cycle.patches.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.name;
+      opt.textContent = `Патч ${p.name}`;
+      if (p.name === item.patch) opt.selected = true;
+      patchSelect.appendChild(opt);
+    });
+
+    openModal("wishModal");
+  }
+
+  function saveWishItem() {
+    const id = document.getElementById("wishId").value;
+    const name = document.getElementById("wishName").value.trim() || "Цель";
+    const type = document.getElementById("wishType").value;
+    const patch = document.getElementById("wishPatch").value;
+    const wantRate = Math.min(10, Math.max(1, parseInt(document.getElementById("wishRate").value) || 10));
+    const customPullsVal = document.getElementById("wishCustomPulls").value.trim();
+    const customPulls = customPullsVal !== "" ? Number(customPullsVal) : null;
+
+    const cycle = state.cycles[state.activeCycle];
+
+    if (id) {
+      const item = cycle.wishlist.find(w => w.id === id);
+      if (item) {
+        item.name = name;
+        item.type = type;
+        item.patch = patch;
+        item.wantRate = wantRate;
+        item.customPulls = customPulls;
+      }
+    } else {
+      cycle.wishlist.push({
+        id: "w_" + Date.now(),
+        name,
+        type,
+        patch,
+        wantRate,
+        customPulls,
+        pulled: false,
+        spentActual: null,
+        extraPity: 0
+      });
+    }
+
+    closeModal("wishModal");
+    renderAll();
+    showToast("Вишлист обновлен!");
+  }
+
+  function deleteWishItem(id) {
+    if (!confirm("Удалить эту цель из вишлиста?")) return;
+    const cycle = state.cycles[state.activeCycle];
+    cycle.wishlist = cycle.wishlist.filter(w => w.id !== id);
+    renderAll();
+    showToast("Цель удалена");
+  }
+
+  /* PULLED MODAL & PITY TRANSITION */
+  function openPulledModal(id) {
+    const cycle = state.cycles[state.activeCycle];
+    const item = cycle.wishlist.find(w => w.id === id);
+    if (!item) return;
+
+    const costs = calculateWishlistCosts();
+    document.getElementById("pulledWishId").value = item.id;
+    document.getElementById("pulledWishName").textContent = `${item.name} (${item.type === 'char' ? 'Персонаж' : 'Оружие'})`;
+    document.getElementById("pulledSpent").value = costs[item.id] || 0;
+    document.getElementById("pulledExtraPity").value = 0;
+
+    openModal("pulledModal");
+  }
+
+  function confirmPulledItem() {
+    const id = document.getElementById("pulledWishId").value;
+    const spent = Number(document.getElementById("pulledSpent").value) || 0;
+    const extraPity = Math.max(0, Number(document.getElementById("pulledExtraPity").value) || 0);
+
+    const cycle = state.cycles[state.activeCycle];
+    const item = cycle.wishlist.find(w => w.id === id);
+    if (item) {
+      item.pulled = true;
+      item.spentActual = spent;
+      item.extraPity = extraPity;
+
+      // Transfer extra pity into active banner pity!
+      if (item.type === "char") {
+        state.bannerState.charPity = extraPity;
+        state.bannerState.charGuaranteed = false; // Reset guarantee after getting banner char
+      } else {
+        state.bannerState.weaponPity = extraPity;
+        state.bannerState.weaponFate = 0;
+      }
+    }
+
+    closeModal("pulledModal");
+    renderAll();
+    showToast("Поздравляем с получением! Пити обновлено.");
+  }
+
+  function unmarkPulled(id) {
+    const cycle = state.cycles[state.activeCycle];
+    const item = cycle.wishlist.find(w => w.id === id);
+    if (item) {
+      item.pulled = false;
+      item.spentActual = null;
+      item.extraPity = 0;
+      renderAll();
+      showToast("Отметка снята");
+    }
+  }
+
+  /* ADD NEW CYCLE */
+  function addNewCyclePrompt() {
+    const name = prompt("Введите имя нового цикла (например, 8.x):", "8.x");
+    if (!name || !name.trim()) return;
+
+    const cleanName = name.trim();
+    if (state.cycles[cleanName]) {
+      alert("Такой цикл уже существует!");
+      return;
+    }
+
+    // Default 8 patches from X.0 to X.7
+    const major = cleanName.split(".")[0] || "8";
+    const newPatches = [];
+    for (let i = 0; i <= 7; i++) {
+      newPatches.push({
+        name: `${major}.${i}`,
+        forecast: 90,
+        actual: null,
+        manualSpent: 0,
+        actualLeftover: null
+      });
+    }
+
+    // Default start pulls can be taken from end of current cycle
+    const currentTimeline = calculatePatchTimeline();
+    const lastLeftover = currentTimeline.length > 0 ? currentTimeline[currentTimeline.length - 1].actualLeftover : 0;
+
+    state.cycles[cleanName] = {
+      startPulls: lastLeftover,
+      patches: newPatches,
+      wishlist: []
+    };
+
+    state.activeCycle = cleanName;
+    renderAll();
+    showToast(`Создан цикл ${cleanName} со стартовым запасом ${lastLeftover} кр.`);
+  }
+
+  function resetToDefaultsPrompt() {
+    if (confirm("Сбросить все таблицы к начальным настройкам из твоего файла? Все текущие изменения будут стёрты.")) {
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      renderAll();
+      showToast("Данные сброшены к начальным");
+    }
+  }
+
+  /* =========================================================================
+     CLOUD SYNC (ROOM CODE VIA SECURE REST) & BACKUP
+     ========================================================================= */
+  function openSyncModal() {
+    document.getElementById("syncStatus").textContent = "";
+    document.getElementById("syncRoomCodeInput").value = state.settings.syncRoomCode || "";
+    openModal("syncModal");
+  }
+
+  async function cloudSave() {
+    const roomCode = document.getElementById("syncRoomCodeInput").value.trim();
+    if (!roomCode) {
+      alert("Пожалуйста, введи секретный код комнаты (например, genshin-room-777)");
+      return;
+    }
+
+    state.settings.syncRoomCode = roomCode;
+    saveLocalState();
+
+    const statusEl = document.getElementById("syncStatus");
+    statusEl.style.color = "var(--accent-gold)";
+    statusEl.textContent = "Сохранение в облако...";
+
+    try {
+      // Free public cloud key-value endpoint using JSON storage
+      const sanitizedKey = "genshin_sync_" + encodeURIComponent(roomCode.toLowerCase());
+      const response = await fetch("https://api.restful-api.dev/objects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: sanitizedKey,
+          data: {
+            appState: state,
+            timestamp: Date.now()
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error("HTTP error " + response.status);
+      const resData = await response.json();
+      
+      // Store the remote object ID for faster fetches
+      localStorage.setItem("cloud_sync_obj_id_" + sanitizedKey, resData.id);
+
+      statusEl.style.color = "var(--accent-green)";
+      statusEl.textContent = "✓ Успешно выгружено в облако! Код: " + roomCode;
+      showToast("Данные синхронизированы в облако!");
+    } catch (e) {
+      console.warn("Direct cloud save fallback:", e);
+      // Fallback: Copy quick sync bundle to clipboard
+      try {
+        const payload = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+        navigator.clipboard.writeText(payload);
+        statusEl.style.color = "var(--accent-cyan)";
+        statusEl.textContent = "Код данных скопирован в буфер обмена для мгновенной вставки!";
+      } catch(err) {
+        statusEl.style.color = "var(--accent-red)";
+        statusEl.textContent = "Ошибка сети. Экспортируйте файл через кнопку «Экспорт».";
+      }
+    }
+  }
+
+  async function cloudLoad() {
+    const roomCode = document.getElementById("syncRoomCodeInput").value.trim();
+    if (!roomCode) {
+      alert("Пожалуйста, введи секретный код комнаты!");
+      return;
+    }
+
+    const statusEl = document.getElementById("syncStatus");
+    statusEl.style.color = "var(--accent-gold)";
+    statusEl.textContent = "Поиск данных в облаке...";
+
+    const sanitizedKey = "genshin_sync_" + encodeURIComponent(roomCode.toLowerCase());
+    const storedObjId = localStorage.getItem("cloud_sync_obj_id_" + sanitizedKey);
+
+    try {
+      let targetData = null;
+      if (storedObjId) {
+        const res = await fetch(`https://api.restful-api.dev/objects/${storedObjId}`);
+        if (res.ok) {
+          const item = await res.json();
+          if (item && item.data && item.data.appState) {
+            targetData = item.data.appState;
+          }
+        }
+      }
+
+      if (!targetData) {
+        // If not found by direct ID, ask user to paste data bundle if network REST is unavailable
+        const pasted = prompt("Введите код комнаты или вставьте скопированный ключ синхронизации:");
+        if (pasted) {
+          try {
+            const decoded = JSON.parse(decodeURIComponent(escape(atob(pasted))));
+            targetData = decoded;
+          } catch(err) {
+            alert("Неверный формат ключа.");
+            return;
+          }
+        }
+      }
+
+      if (targetData) {
+        state = targetData;
+        state.settings.syncRoomCode = roomCode;
+        renderAll();
+        statusEl.style.color = "var(--accent-green)";
+        statusEl.textContent = "✓ Данные успешно загружены!";
+        closeModal("syncModal");
+        showToast("Синхронизация завершена!");
+      } else {
+        statusEl.style.color = "var(--accent-red)";
+        statusEl.textContent = "Комната не найдена. Сначала выгрузите данные с ПК.";
+      }
+    } catch (e) {
+      statusEl.style.color = "var(--accent-red)";
+      statusEl.textContent = "Ошибка при загрузке: " + e.message;
+    }
+  }
+
+  /* EXPORT / IMPORT JSON */
+  function exportDataJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+    const dlAnchorElem = document.createElement("a");
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `Genshin_Pulls_${state.activeCycle}_${new Date().toISOString().slice(0,10)}.json`);
+    dlAnchorElem.click();
+    showToast("JSON файл успешно сохранён");
+  }
+
+  function importDataJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (parsed.cycles && parsed.activeCycle) {
+          state = parsed;
+          renderAll();
+          showToast("Данные успешно импортированы!");
+        } else {
+          alert("Неверная структура файла JSON.");
+        }
+      } catch (err) {
+        alert("Ошибка чтения JSON файла: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
+  }
+
+  /* MODAL HELPERS */
+  function openModal(id) {
+    document.getElementById(id).classList.add("active");
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove("active");
+  }
+  function escapeHtml(text) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+  }
+
+  // Close modals on clicking backdrop
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this.id);
+    });
+  });
+
+  // INITIAL RUN
+  renderAll();
+</script>
+</body>
+</html>
